@@ -6,6 +6,7 @@ There are two components - PubSub as pb, Subscriber as pb
 Below methods are supported:
 
 pb.CreateTopic(topicID)
+
 pb.DeleteTopic(TopicID)
 pb.AddSubscription(topicID,SubscriptionID); Creates and adds subscription with id SubscriptionID to topicName.
 pb.DeleteSubscription(SubscriptionID)
