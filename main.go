@@ -11,7 +11,7 @@ import (
 type MessageEvent struct {
 	Message   string
 	TopicID   string
-	MessageID string
+	MessageID int
 }
 
 type SubscriptionID chan MessageEvent
@@ -100,7 +100,7 @@ func (pb *PubSub) Publish(topicID string, message string) {
 			for _, ch := range subscriptionIDChannelSlices {
 				ch <- message
 			}
-		}(MessageEvent{Message: message, TopicID: topicID}, channels)
+		}(MessageEvent{Message: message, TopicID: topicID, MessageID: rand.Int()}, channels)
 	}
 	pb.rm.RUnlock()
 }
@@ -129,16 +129,31 @@ func (sb *Subscriber) UnSubscribe(subscriptionID SubscriptionID) {
 	pb.rm.Unlock()
 }
 
+func (pb *PubSub) Ack(messageID int) {
+	pb.rm.Lock()
+	//messageEvent := <-subscriptionID
+	fmt.Println("MessageID: ", messageID, " has been received and processed")
+	fmt.Println()
+	pb.rm.Unlock()
+}
+
 // Subscriber comment
 type Subscriber struct {
 	subscriptionIDToSubscriberFunc map[SubscriptionID]SubscriberFunc
 	rm                             sync.RWMutex
 }
 
-type SubscriberFunc func(messageEvent MessageEvent)
+type SubscriberFunc func(subscriptionID SubscriptionID)
 
-func SubscriberFunc1(messageEvent MessageEvent) {
-	fmt.Printf("Message: %s", messageEvent.Message)
+func SubscriberFunc1(subscriptionID SubscriptionID) {
+	messageEvent := <-subscriptionID
+	message := messageEvent.Message
+	messageID := messageEvent.MessageID
+	topicID := messageEvent.TopicID
+	fmt.Println("Message: %s", message)
+	fmt.Println("MessageID: ", messageID)
+	fmt.Println("TopicID: %s", topicID)
+	pb.Ack(messageID)
 }
 
 var sb = &Subscriber{
@@ -154,9 +169,8 @@ func main() {
 
 	go PublishIterate("topic1", "message")
 	for {
-		select {
-		case d := <-subscriptionID1:
-			go SubscriberFunc1(d)
-		}
+		//d := <-subscriptionID1
+		go SubscriberFunc1(subscriptionID1)
+
 	}
 }
