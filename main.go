@@ -137,7 +137,6 @@ func (pb *PubSub) Ack(messageID int) {
 	pb.rm.Unlock()
 }
 
-// Subscriber comment
 type Subscriber struct {
 	subscriptionIDToSubscriberFunc map[SubscriptionID]SubscriberFunc
 	rm                             sync.RWMutex
@@ -169,7 +168,6 @@ func main() {
 
 	go PublishIterate("topic1", "message")
 	for {
-		//d := <-subscriptionID1
 		go SubscriberFunc1(subscriptionID1)
 
 	}
